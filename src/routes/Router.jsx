@@ -6,6 +6,11 @@ import Login from "../components/Auth/Login";
 import Signup from "../components/Auth/Signup";
 import ForgetPassword from "../components/Auth/ForgetPassword";
 import ResetPassword from "../components/Auth/ResetPassword";
+import Contact from "../../../studio/src/pages/Contact";
+import DashboardLogin from "../components/Dashboard/DashboardAuth/DashboardLogin";
+import PrivateRoute from "../components/Dashboard/DashboardAuth/PrivateRoute";
+import AddProducts from "../components/Dashboard/AddProducts";
+import AllProducts from "../components/Dashboard/AllProducts";
 
 export const router = createBrowserRouter([
     {
@@ -15,6 +20,10 @@ export const router = createBrowserRouter([
             {
                 path:"/",
                 element:<Home/>
+            },
+            {
+                path:"/contact-us",
+                element:<Contact />
             },
             // Authenticated
             {
@@ -33,10 +42,30 @@ export const router = createBrowserRouter([
                 path:"/reset-password",
                 element:<ResetPassword />
             },
+            // Dashboard
             {
                 path:"/dashboard",
-                element:<Dashboard />
-            }
+                element:(
+                    <PrivateRoute><Dashboard /></PrivateRoute>
+                )
+            },
+            {
+                path:"/add-product",
+                element:(
+                    <PrivateRoute><AddProducts /></PrivateRoute>
+                )
+            },
+            {
+                path:"/all-products",
+                element:(
+                    <PrivateRoute><AllProducts /></PrivateRoute>
+                )
+            },
+            // Dashboard auth
+            {
+                path:"/dashboard-login",
+                element:<DashboardLogin />
+            },
         ]
     }
 ])

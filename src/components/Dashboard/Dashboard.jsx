@@ -3,6 +3,7 @@ import logo from '../../assets/logo.png'
 import AddProducts from './AddProducts'
 import { RxHamburgerMenu } from "react-icons/rx";
 import { motion, AnimatePresence } from "framer-motion";
+import AllProducts from './AllProducts';
 
 export default function Dashboard() {
   // Get from localStorage (fallback: Dashboard)
@@ -68,7 +69,7 @@ export default function Dashboard() {
         {/* Main Section */}
         <div className="w-full mt-32 mb-10 px-5 lg:px-20">
           {activeTab === "Dashboard" && <div>Dashboard content</div>}
-          {activeTab === "All products" && <div>All Products content</div>}
+          {activeTab === "All products" && <div><AllProducts /></div>}
           {activeTab === "Add Products" && <AddProducts />}
           {activeTab === "Contact Details" && <div>Contact Details content</div>}
           {activeTab === "Cancel Request" && <div>Cancel Request content</div>}
