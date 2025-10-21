@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import AuthLoader from "../Auth/AuthLoader";
+import { toast } from "react-toastify";
+import { motion } from "framer-motion";
 
-export default function AddProducts() {
+export default function AddProducts({ setActiveTab, productData: productDataFromProps }) {
   const [benefits, setBenefits] = useState([""]);
   const [fileNames, setFileNames] = useState([]);
   const [files, setFiles] = useState([]);
+  const [existingImages, setExistingImages] = useState([]); // New state for existing images
   const [isEditing, setIsEditing] = useState(false);
   const [editingProductId, setEditingProductId] = useState(null);
-
+  const [loading, setLoading] = useState(false);
+  const [category, setCategory] = useState([]);
   const [productData, setProductData] = useState({
     isCombo: false,
     name: "",
@@ -19,25 +24,42 @@ export default function AddProducts() {
     status: true,
     tags: "",
     description: "",
-    categoryId: ""
+    categoryName: "", // changed from categoryId → categoryName
   });
 
   const location = useLocation();
-  const navigate = useNavigate();
+  const getToken = () => sessionStorage.getItem("accessToken");
 
-  // Get token from sessionStorage
-  const getToken = () => {
-    return sessionStorage.getItem("accessToken");
+  // Fetch categories
+  useEffect(() => {
+    fetchCategory();
+  }, []);
+  const fetchCategory = async () => {
+    try {
+      const token = getToken();
+      const response = await fetch("https://shri-velan-food.onrender.com/api/categories" ,
+         { headers: { Authorization: `Bearer ${token}` } }
+        );
+      if (!response.ok) throw new Error("Failed to fetch category");
+
+      const result = await response.json();
+      if (result.success && Array.isArray(result.data)) {
+        setCategory(result.data);
+      } else {
+        throw new Error("Invalid category data format");
+      }
+    } catch (err) {
+      console.error("Fetch category error:", err);
+      alert("Failed to fetch category. Please try again later.");
+    }
   };
 
-  // Check if we're in edit mode
+  // Prefill from props
   useEffect(() => {
-    if (location.state?.isEditing && location.state?.product) {
-      const product = location.state.product;
+    if (productDataFromProps) {
+      const product = productDataFromProps;
       setIsEditing(true);
       setEditingProductId(product.id);
-      
-      // Pre-fill form with product data
       setProductData({
         isCombo: product.isCombo || false,
         name: product.name || "",
@@ -49,24 +71,47 @@ export default function AddProducts() {
         status: product.status !== undefined ? product.status : true,
         tags: product.tags?.join(", ") || "",
         description: product.description || "",
-        categoryId: product.categoryId || product.category?.id || ""
+        categoryName: product.category?.name || "", // use category name
       });
 
-      // Pre-fill benefits
-      if (product.benefits && product.benefits.length > 0) {
-        setBenefits(product.benefits);
-      } else {
-        setBenefits([""]);
-      }
+      setBenefits(product.benefits?.length > 0 ? product.benefits : [""]);
 
-      // You might want to handle existing images here
-      if (product.images && product.images.length > 0) {
-        setFileNames(product.images.map((img, index) => `Existing Image ${index + 1}`));
+      if (product.images?.length > 0) {
+        setExistingImages(product.images);
+        setFileNames(product.images.map((_, i) => `Existing Image ${i + 1}`));
+      }
+    }
+  }, [productDataFromProps]);
+
+  // Prefill from location.state (for backward compatibility)
+  useEffect(() => {
+    if (location.state?.isEditing && location.state?.product) {
+      const product = location.state.product;
+      setIsEditing(true);
+      setEditingProductId(product.id);
+      setProductData({
+        isCombo: product.isCombo || false,
+        name: product.name || "",
+        weight: product.weight || "",
+        normalPrice: product.normalPrice || "",
+        offerPrice: product.offerPrice || "",
+        ingredients: product.ingredients?.join(", ") || "",
+        stock: product.stock || "",
+        status: product.status !== undefined ? product.status : true,
+        tags: product.tags?.join(", ") || "",
+        description: product.description || "",
+        categoryName: product.category?.name || "", // use category name
+      });
+
+      setBenefits(product.benefits?.length > 0 ? product.benefits : [""]);
+
+      if (product.images?.length > 0) {
+        setExistingImages(product.images);
+        setFileNames(product.images.map((_, i) => `Existing Image ${i + 1}`));
       }
     }
   }, [location.state]);
 
-  // ✅ handle multiple file uploads
   const handleFileChange = (e) => {
     const selectedFiles = Array.from(e.target.files);
     if (selectedFiles.length > 0) {
@@ -75,30 +120,29 @@ export default function AddProducts() {
     }
   };
 
-  // ✅ handle all other inputs
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setProductData({
-      ...productData,
-      [name]: type === "checkbox" ? checked : value,
-    });
+    setProductData({ ...productData, [name]: type === "checkbox" ? checked : value });
   };
 
-  // ✅ handle dynamic benefits
   const handleBenefitChange = (index, value) => {
     const updated = [...benefits];
     updated[index] = value;
     setBenefits(updated);
   };
   const addBenefit = () => setBenefits([...benefits, ""]);
-  const removeBenefit = (index) =>
-    setBenefits(benefits.filter((_, i) => i !== index));
+  const removeBenefit = (index) => setBenefits(benefits.filter((_, i) => i !== index));
 
-  // ✅ handle submit for both add and edit
+  // Remove existing image
+  const removeExistingImage = (index) => {
+    const updated = [...existingImages];
+    updated.splice(index, 1);
+    setExistingImages(updated);
+    setFileNames(updated.map((_, i) => `Existing Image ${i + 1}`));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Check if token exists
     const token = getToken();
     if (!token) {
       alert("No authorization token found. Please login again.");
@@ -106,11 +150,8 @@ export default function AddProducts() {
     }
 
     const formData = new FormData();
-
-    // Append multiple files as images[] (only for new uploads)
     files.forEach((file) => formData.append("images", file));
 
-    // Convert comma-separated values to arrays
     const ingredientsArray = productData.ingredients
       .split(",")
       .map((i) => i.trim())
@@ -120,7 +161,6 @@ export default function AddProducts() {
       .map((t) => t.trim())
       .filter(Boolean);
 
-    // Append basic fields
     formData.append("name", productData.name);
     formData.append("description", productData.description);
     formData.append("weight", productData.weight);
@@ -129,56 +169,55 @@ export default function AddProducts() {
     formData.append("offerPrice", productData.offerPrice);
     formData.append("stock", productData.stock);
     formData.append("status", productData.status);
-    formData.append("categoryId", productData.categoryId);
+    formData.append("categoryName", productData.categoryName);
     formData.append("benefits", JSON.stringify(benefits));
     formData.append("ingredients", JSON.stringify(ingredientsArray));
     formData.append("tags", JSON.stringify(tagsArray));
 
+    if (isEditing) {
+      formData.append("existingImages", JSON.stringify(existingImages)); // send existing images array
+    }
+
     try {
-      let res;
+      setLoading(true);
       let url = "https://shri-velan-food.onrender.com/api/products";
-      
+      let res;
+
       if (isEditing) {
-        // For editing, use PUT method and include product ID
         url += `/${editingProductId}`;
         res = await fetch(url, {
           method: "PUT",
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
+          headers: { Authorization: `Bearer ${token}` },
           body: formData,
         });
       } else {
-        // For adding, use POST method
         res = await fetch(url, {
           method: "POST",
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
+          headers: { Authorization: `Bearer ${token}` },
           body: formData,
         });
       }
 
-      const data = await res.json();
-      if (res.ok) {
-        alert(`✅ Product ${isEditing ? 'updated' : 'added'} successfully!`);
-        if (!isEditing) {
-          // Reset form if it was an add operation
-          resetForm();
-        } else {
-          // Navigate back to products list after successful edit
-          navigate('/all-products');
-        }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast.error(`❌ ${isEditing ? "Update" : "Add"} failed: ${data.message || "Unknown error"}`);
+        return;
+      }
+
+      toast.success(`✅ Product ${isEditing ? "updated" : "added"} successfully!`);
+      if (!isEditing) {
+        resetForm();
       } else {
-        alert(`❌ ${isEditing ? 'Update' : 'Add'} failed: ${data.message || "Unknown error"}`);
+        if (typeof setActiveTab === "function") setActiveTab("All products");
       }
     } catch (err) {
       console.error(err);
-      alert("❌ Something went wrong");
+      toast.error("❌ Something went wrong, please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Reset form function
   const resetForm = () => {
     setProductData({
       isCombo: false,
@@ -191,48 +230,113 @@ export default function AddProducts() {
       status: true,
       tags: "",
       description: "",
-      categoryId: ""
+      categoryName: "",
     });
     setBenefits([""]);
     setFiles([]);
     setFileNames([]);
+    setExistingImages([]);
   };
 
   return (
-    <section className="px-5 lg:px-20">
-      <h1 className="text-2xl font-semibold mb-5">
-        {isEditing ? 'Edit Product' : 'Add Products'}
-      </h1>
+        <motion.section
+      className="px-5 lg:px-20"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+    >
+      <motion.h1
+        className="text-2xl font-semibold mb-5"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        {isEditing ? "Edit Product" : "Add Products"}
+      </motion.h1>
 
-      <form className="flex flex-col gap-6 w-full" onSubmit={handleSubmit}>
+      <motion.form
+        className="flex flex-col gap-6 w-full"
+        onSubmit={handleSubmit}
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: { opacity: 0 },
+          visible: {
+            opacity: 1,
+            transition: { staggerChildren: 0.08 },
+          },
+        }}
+      >
         {/* Product Images */}
-        <div className="flex flex-col gap-2">
+        <motion.div
+          className="flex flex-col gap-2"
+          variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+        >
           <label className="font-medium mb-1">Product Images:</label>
-          <div className="flex items-center gap-3">
-            <input
-              type="file"
-              id="fileUpload"
-              multiple
-              className="hidden"
-              onChange={handleFileChange}
-            />
-            <label
-              htmlFor="fileUpload"
-              className="cursor-pointer bg-primary text-white px-4 py-2 rounded-md transition"
-            >
-              Choose Files
-            </label>
-            <span className="text-gray-600 text-sm">
-              {fileNames.length > 0 ? fileNames.join(", ") : "No file chosen"}
-            </span>
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={handleFileChange}
+            className="mb-3"
+          />
+          <div className="flex gap-3 flex-wrap">
+            {existingImages.map((img, index) => (
+              <motion.div
+                key={index}
+                className="relative"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+              >
+                <img
+                  src={img}
+                  alt={`Existing ${index + 1}`}
+                  className="w-24 h-24 object-cover rounded"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeExistingImage(index)}
+                  className="absolute top-0 right-0 bg-red-500 text-white px-1 rounded-full"
+                >
+                  ✕
+                </button>
+              </motion.div>
+            ))}
+
+            {files.map((file, index) => (
+              <motion.div
+                key={index}
+                className="relative"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+              >
+                <img
+                  src={URL.createObjectURL(file)}
+                  alt={file.name}
+                  className="w-24 h-24 object-cover rounded"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const updatedFiles = [...files];
+                    updatedFiles.splice(index, 1);
+                    setFiles(updatedFiles);
+                    setFileNames(updatedFiles.map((f) => f.name));
+                  }}
+                  className="absolute top-0 right-0 bg-red-500 text-white px-1 rounded-full"
+                >
+                  ✕
+                </button>
+              </motion.div>
+            ))}
           </div>
-          {isEditing && fileNames.length === 0 && (
-            <p className="text-sm text-gray-500">No new images selected. Existing images will be kept.</p>
-          )}
-        </div>
+        </motion.div>
 
         {/* Combo Checkbox */}
-        <div className="flex items-center gap-2">
+        <motion.div
+          className="flex items-center gap-2"
+          variants={{ hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0 } }}
+        >
           <input
             id="isCombo"
             type="checkbox"
@@ -243,10 +347,13 @@ export default function AddProducts() {
           <label htmlFor="isCombo" className="font-medium">
             Is this a combo product?
           </label>
-        </div>
+        </motion.div>
 
         {/* Name & Weight */}
-        <div className="flex flex-col md:flex-row gap-5">
+        <motion.div
+          className="flex flex-col md:flex-row gap-5"
+          variants={{ hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0 } }}
+        >
           <div className="flex flex-col w-full">
             <label className="font-medium mb-1">Product Name:</label>
             <input
@@ -271,24 +378,37 @@ export default function AddProducts() {
               required
             />
           </div>
-        </div>
+        </motion.div>
 
-        {/* Category */}
-        <div className="flex flex-col">
-          <label className="font-medium mb-1">Category ID:</label>
-          <input
-            name="categoryId"
-            className="border px-5 py-2 outline-none rounded-md focus:border-primary"
-            type="text"
-            placeholder="Enter category ID"
-            value={productData.categoryId}
+        {/* Category Dropdown */}
+        <motion.div
+          className="flex flex-col w-full"
+          variants={{ hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0 } }}
+        >
+          <label className="font-medium mb-1">Select Category:</label>
+          <select
+            name="categoryName"
+            value={productData.categoryName}
             onChange={handleChange}
+            className="border px-5 py-2 outline-none rounded-md focus:border-primary"
             required
-          />
-        </div>
+          >
+            <option value="">-- Select Category --</option>
+            {category
+              .filter((cate) => cate.isActive)
+              .map((cate) => (
+                <option key={cate.id} value={cate.name}>
+                  {cate.name}
+                </option>
+              ))}
+          </select>
+        </motion.div>
 
         {/* Prices */}
-        <div className="flex flex-col md:flex-row gap-5">
+        <motion.div
+          className="flex flex-col md:flex-row gap-5"
+          variants={{ hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0 } }}
+        >
           <div className="flex flex-col w-full">
             <label className="font-medium mb-1">Normal Price:</label>
             <input
@@ -313,10 +433,10 @@ export default function AddProducts() {
               required
             />
           </div>
-        </div>
+        </motion.div>
 
         {/* Benefits */}
-        <div>
+        <motion.div variants={{ hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0 } }}>
           <label className="font-medium">Benefits:</label>
           {benefits.map((benefit, index) => (
             <div key={index} className="flex gap-3 mt-2">
@@ -345,10 +465,13 @@ export default function AddProducts() {
           >
             + Add Benefit
           </button>
-        </div>
+        </motion.div>
 
         {/* Ingredients */}
-        <div className="flex flex-col">
+        <motion.div
+          className="flex flex-col"
+          variants={{ hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0 } }}
+        >
           <label className="font-medium mb-1">Ingredients (comma separated):</label>
           <input
             name="ingredients"
@@ -359,10 +482,13 @@ export default function AddProducts() {
             onChange={handleChange}
             required
           />
-        </div>
+        </motion.div>
 
         {/* Stock & Tags */}
-        <div className="flex flex-col md:flex-row gap-5">
+        <motion.div
+          className="flex flex-col md:flex-row gap-5"
+          variants={{ hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0 } }}
+        >
           <div className="flex flex-col w-full">
             <label className="font-medium mb-1">Stock Quantity:</label>
             <input
@@ -387,23 +513,27 @@ export default function AddProducts() {
               required
             />
           </div>
-        </div>
+        </motion.div>
 
         {/* Status */}
-        <div className="flex items-center gap-2">
+        <motion.div
+          className="flex items-center gap-2"
+          variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
+        >
           <input
             type="checkbox"
             name="status"
             checked={productData.status}
-            onChange={(e) =>
-              setProductData({ ...productData, status: e.target.checked })
-            }
+            onChange={(e) => setProductData({ ...productData, status: e.target.checked })}
           />
           <label className="font-medium">Active Status</label>
-        </div>
+        </motion.div>
 
         {/* Description */}
-        <div className="flex flex-col">
+        <motion.div
+          className="flex flex-col"
+          variants={{ hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0 } }}
+        >
           <label className="font-medium mb-1">Description:</label>
           <textarea
             name="description"
@@ -413,27 +543,33 @@ export default function AddProducts() {
             onChange={handleChange}
             required
           ></textarea>
-        </div>
+        </motion.div>
 
-        {/* Submit Button */}
-        <button
+        {/* Submit */}
+        <motion.button
           type="submit"
-          className="px-6 py-2 bg-primary text-white font-semibold rounded"
+          disabled={loading}
+          className={`relative flex items-center justify-center gap-2 px-6 py-2 text-white font-semibold rounded transition-all duration-200 ${
+            loading ? "bg-transparent cursor-not-allowed" : "bg-primary hover:bg-primary/90"
+          }`}
+          variants={{ hidden: { opacity: 0, scale: 0.95 }, visible: { opacity: 1, scale: 1 } }}
         >
-          {isEditing ? 'Update Product' : 'Add Product'}
-        </button>
+          {loading ? <AuthLoader /> : isEditing ? "Update Product" : "Add Product"}
+        </motion.button>
 
-        {/* Cancel button for edit mode */}
         {isEditing && (
-          <button
+          <motion.button
             type="button"
-            onClick={() => navigate('/all-products')}
+            onClick={() =>
+              typeof setActiveTab === "function" && setActiveTab("All products")
+            }
             className="px-6 py-2 bg-gray-500 text-white font-semibold rounded"
+            variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
           >
             Cancel
-          </button>
+          </motion.button>
         )}
-      </form>
-    </section>
+      </motion.form>
+    </motion.section>
   );
 }

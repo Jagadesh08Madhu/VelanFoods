@@ -1,30 +1,23 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import Loader from "../Loader/Loader";
 
-export default function AllProducts() {
+export default function AllProducts({ setActiveTab }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const navigate = useNavigate();
+
+  const getToken = () => sessionStorage.getItem("accessToken");
 
   useEffect(() => {
     fetchProducts();
   }, []);
 
-  // Get token from sessionStorage
-  const getToken = () => {
-    return sessionStorage.getItem("accessToken");
-  };
-
-  // Fetch all products
   const fetchProducts = async () => {
     setLoading(true);
     try {
       const token = getToken();
       const response = await fetch("https://shri-velan-food.onrender.com/api/products", {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error("Failed to fetch products");
       const data = await response.json();
@@ -36,48 +29,35 @@ export default function AllProducts() {
     }
   };
 
-  // Delete a product
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
 
     try {
       const token = getToken();
-      if (!token) {
-        alert("No authorization token found. Please login again.");
-        return;
-      }
+      if (!token) return alert("No authorization token found.");
 
       const response = await fetch(`https://shri-velan-food.onrender.com/api/products/${id}`, {
         method: "DELETE",
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` },
       });
+
       if (!response.ok) throw new Error("Failed to delete product");
       alert("Product deleted successfully!");
-      fetchProducts(); // refresh list
+      fetchProducts();
     } catch (err) {
       alert(err.message);
     }
   };
 
-  // Edit a product - Navigate to AddProducts with product data
   const handleEdit = (product) => {
-    navigate('/add-product', { 
-      state: { 
-        product: product, 
-        isEditing: true 
-      } 
-    });
+    setActiveTab("Add Products", { product, isEditing: true });
   };
 
-  if (loading)
-    return <p className="text-center text-blue-500 mt-5">Loading products...</p>;
-  if (error)
-    return <p className="text-center text-red-500 mt-5">Error: {error}</p>;
+  if (loading) return <div className="flex min-h-screen justify-center items-center"><Loader /></div>
+  if (error) return <p className="text-center text-red-500 mt-5">Error: {error}</p>;
 
   return (
-    <section className="p-6">
+    <section>
       <h2 className="text-2xl font-semibold mb-5 text-center">All Products</h2>
 
       {products.length === 0 ? (
@@ -85,32 +65,14 @@ export default function AllProducts() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.map((product) => (
-            <div
-              key={product.id}
-              className="border rounded-lg p-4 shadow hover:shadow-lg transition bg-white"
-            >
-              {/* Product Image */}
-              <img
-                src={product.images?.[0]}
-                alt={product.name}
-                className="w-full h-56 object-cover rounded-md"
-              />
-
-              {/* Product Details */}
+            <div key={product.id} className="border rounded-lg p-4 shadow hover:shadow-lg transition bg-white">
+              <img src={product.images?.[0]} alt={product.name} className="w-full h-56 object-cover rounded-md" />
               <div className="mt-3">
                 <h3 className="text-xl font-semibold">{product.name}</h3>
                 <p className="text-gray-600">{product.description}</p>
-                <p className="mt-2 text-gray-700">
-                  <span className="font-medium">Weight:</span> {product.weight}
-                </p>
-                <p className="text-gray-700">
-                  <span className="font-medium">Normal Price:</span> ₹{product.normalPrice}
-                </p>
-                <p className="text-green-600 font-semibold">
-                  Offer Price: ₹{product.offerPrice}
-                </p>
-
-                {/* Edit & Delete Buttons */}
+                <p className="mt-2 text-gray-700"><span className="font-medium">Weight:</span> {product.weight}</p>
+                <p className="text-gray-700"><span className="font-medium">Normal Price:</span> ₹{product.normalPrice}</p>
+                <p className="text-green-600 font-semibold">Offer Price: ₹{product.offerPrice}</p>
                 <div className="mt-3 flex gap-2">
                   <button
                     onClick={() => handleEdit(product)}

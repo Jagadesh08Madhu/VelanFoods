@@ -11,6 +11,7 @@ import DashboardLogin from "../components/Dashboard/DashboardAuth/DashboardLogin
 import PrivateRoute from "../components/Dashboard/DashboardAuth/PrivateRoute";
 import AddProducts from "../components/Dashboard/AddProducts";
 import AllProducts from "../components/Dashboard/AllProducts";
+import PublicRoute from "../components/Dashboard/DashboardAuth/PublicRoute";
 
 export const router = createBrowserRouter([
     {
@@ -64,7 +65,9 @@ export const router = createBrowserRouter([
             // Dashboard auth
             {
                 path:"/dashboard-login",
-                element:<DashboardLogin />
+                element:(
+                    <PublicRoute><DashboardLogin /></PublicRoute>
+                )
             },
         ]
     }

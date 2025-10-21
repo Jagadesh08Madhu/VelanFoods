@@ -4,12 +4,15 @@ import AddProducts from './AddProducts'
 import { RxHamburgerMenu } from "react-icons/rx";
 import { motion, AnimatePresence } from "framer-motion";
 import AllProducts from './AllProducts';
+import CreateCategory from './CreateCategory';
+import DashboardContent from './DashboardContent';
 
 export default function Dashboard() {
-  // Get from localStorage (fallback: Dashboard)
-  const [activeTab, setActiveTab] = useState(
+  // State for active tab
+  const [activeTab, setActiveTabState] = useState(
     sessionStorage.getItem("activeTab") || "Dashboard"
   )
+  const [tabData, setTabData] = useState(null);
   const [openSideNav, setOpenSideNav] = useState(false)
 
   // Whenever activeTab changes → update localStorage
@@ -17,7 +20,13 @@ export default function Dashboard() {
     sessionStorage.setItem("activeTab", activeTab)
   }, [activeTab])
 
-  const liItems = ["Dashboard", "All products", "Add Products", "Contact Details", "Cancel Request"]
+  // Custom function to switch tabs and pass optional data
+  const handleSetActiveTab = (tabName, data = null) => {
+    setActiveTabState(tabName);
+    setTabData(data);
+  };
+
+  const liItems = ["Dashboard", "All products", "Add Products","Create Category","Contact Details"]
 
   return (
     <section className="">
@@ -49,7 +58,7 @@ export default function Dashboard() {
                   <li
                     key={item}
                     onClick={() => {
-                      setActiveTab(item);
+                      handleSetActiveTab(item);
                       setOpenSideNav(false);
                     }}
                     className={`w-full tracking-widest text-center cursor-pointer transition-all duration-300 ease-in-out py-3 ${
@@ -68,11 +77,11 @@ export default function Dashboard() {
 
         {/* Main Section */}
         <div className="w-full mt-32 mb-10 px-5 lg:px-20">
-          {activeTab === "Dashboard" && <div>Dashboard content</div>}
-          {activeTab === "All products" && <div><AllProducts /></div>}
-          {activeTab === "Add Products" && <AddProducts />}
+          {activeTab === "Dashboard" && <DashboardContent />}
+          {activeTab === "All products" && <AllProducts setActiveTab={handleSetActiveTab} />}
+          {activeTab === "Add Products" && <AddProducts setActiveTab={handleSetActiveTab} productData={tabData?.product} />}
+          {activeTab === "Create Category" && <CreateCategory />}
           {activeTab === "Contact Details" && <div>Contact Details content</div>}
-          {activeTab === "Cancel Request" && <div>Cancel Request content</div>}
         </div>
       </div>
     </section>
