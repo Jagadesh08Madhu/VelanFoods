@@ -6,6 +6,10 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        Italiana: ['Italiana', 'sans-serif'],
+        SpaceGrotesk: ['"Space Grotesk"', 'sans-serif'],
+      },
       colors:{
         primary: "#8D3A84",
       }

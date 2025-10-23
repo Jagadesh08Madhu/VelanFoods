@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import contact from '../assets/contact.webp';
+// import contact from '../assets/contact.webp';
 import ContactDetails from '../components/ContactDetails';
 
 export default function Contact() {
@@ -63,7 +63,7 @@ export default function Contact() {
   return (
     <section className='font-alice'>
       <div style={{
-        backgroundImage: `url(${contact})`,
+        // backgroundImage: `url(${contact})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundAttachment: "fixed"

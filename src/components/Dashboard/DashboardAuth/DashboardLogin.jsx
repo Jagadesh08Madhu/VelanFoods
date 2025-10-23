@@ -57,7 +57,7 @@ export default function DashboardLogin() {
       </div>
 
       {/* Right side form */}
-      <div className="w-full md:w-1/2 flex  items-center justify-center">
+      <div className="w-full lg:w-1/2 flex  items-center justify-center">
         <div className="bg-[#1a162b] p-10 rounded-2xl shadow-lg w-[90%] md:w-[70%]">
           <h2 className="text-2xl font-semibold mb-6 text-center">
             Welcome Back Admin👋

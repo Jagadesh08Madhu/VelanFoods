@@ -6,7 +6,7 @@ import Login from "../components/Auth/Login";
 import Signup from "../components/Auth/Signup";
 import ForgetPassword from "../components/Auth/ForgetPassword";
 import ResetPassword from "../components/Auth/ResetPassword";
-import Contact from "../../../studio/src/pages/Contact";
+import Contact from "../pages/Contact"
 import DashboardLogin from "../components/Dashboard/DashboardAuth/DashboardLogin";
 import PrivateRoute from "../components/Dashboard/DashboardAuth/PrivateRoute";
 import AddProducts from "../components/Dashboard/AddProducts";
@@ -47,7 +47,8 @@ export const router = createBrowserRouter([
             {
                 path:"/dashboard",
                 element:(
-                    <PrivateRoute><Dashboard /></PrivateRoute>
+                    // <PrivateRoute><Dashboard /></PrivateRoute>
+                    <Dashboard />
                 )
             },
             {
