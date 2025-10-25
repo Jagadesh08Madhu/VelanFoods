@@ -24,7 +24,7 @@ export default function Signup() {
 
     setLoading(true);
     try {
-      const response = await fetch("https://your-backend.com/api/signup", {
+      const response = await fetch("https://shri-velan-food.onrender.com/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,101 +1,66 @@
-import React from 'react';
-import { IoHome } from "react-icons/io5";
-import { MdPhoneCallback, MdAttachEmail } from "react-icons/md";
-import { motion } from 'framer-motion';
+import React from "react";
+import { IoMailOpenOutline } from "react-icons/io5";
+import { FaWhatsapp } from "react-icons/fa";
+import { FaLocationDot } from "react-icons/fa6";
 
 export default function ContactDetails() {
+  const contactData = [
+    {
+      id: 1,
+      icon: <FaWhatsapp size={36} />,
+      title: "WhatsApp",
+      info: "+91 8122747148",
+      link: "https://wa.me/918122747148",
+      color: "bg-green-500",
+    },
+    {
+      id: 2,
+      icon: <IoMailOpenOutline size={36} />,
+      title: "Email",
+      info: "shrivelanhealthmix23@gmail.com",
+      link: "mailto:shrivelanhealthmix23@gmail.com",
+      color: "bg-amber-500",
+    },
+    {
+      id: 3,
+      icon: <FaLocationDot size={36} />,
+      title: "Factory",
+      info: "Kasukadai street, Mettupalayam,Trichy-621210",
+      // link: "https://maps.google.com?q=26+Shivan+street+Usupur+Chidambaram",
+      color: "bg-emerald-500",
+    },
+  ];
+
   return (
-    <section className='font-alice mx-5 lg:mx-20 py-20'>
-      <div className='flex flex-col items-center gap-10 lg:flex-row'>
-        
-        <motion.div
-          className='flex flex-col gap-5 lg:w-1/2'
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{once:true , amount: 0.4}}
-        >
-          <motion.h1
-            className='text-3xl font-semibold'
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            viewport={{once:true , amount: 0.4}}
+    <section className="px-5 lg:px-20 py-10">
+      <h1 className="text-xl lg:text-3xl pb-5 text-center font-Italiana font-semibold tracking-widest">Contact Details</h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {contactData.map((item) => (
+          <div
+            key={item.id}
+            className={`${item.color} text-white cursor-pointer p-6 rounded-3xl shadow-lg relative overflow-hidden hover:scale-[1.03] transition-transform duration-300`}
+            style={{
+              borderTopLeftRadius: "0",
+            }}
           >
-            Contact Us
-          </motion.h1>
-
-          {/* Address */}
-          <motion.div 
-            className='flex items-center gap-3'
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            viewport={{once:true , amount: 0.4}}
-          >
-            <div className='p-5 bg-gray-900 text-white rounded-xl shadow-gray-700 shadow-lg'>
-              <IoHome />
+            <div className="flex flex-col items-center text-center gap-3">
+              <span className="text-white">{item.icon}</span>
+              <h2 className="text-xl font-Italiana tracking-widest font-semibold">{item.title}</h2>
+              {item.link ? (
+                <a
+                  href={item.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white font-SpaceGrotesk tracking-wider text-sm hover:underline break-words"
+                >
+                  {item.info}
+                </a>
+              ) : (
+                <p className="text-white text-sm">{item.info}</p>
+              )}
             </div>
-            <div className='flex flex-col'>
-              <h1>Address :</h1>
-              <p>Salem Main Rd, near Lena Theatre, Raja Nagar, Kallakurichi, Tamil Nadu 606202</p>
-            </div>
-          </motion.div>
-
-          {/* Phone */}
-          <motion.div 
-            className='flex items-center gap-3'
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            viewport={{once:true , amount: 0.4}}
-          >
-            <div className='p-5 bg-gray-900 text-white rounded-xl shadow-gray-700 shadow-lg'>
-              <MdPhoneCallback />
-            </div>
-            <div>
-              <h1>Phone :</h1>
-              <p>+91 98437 43907</p>
-            </div>
-          </motion.div>
-
-          {/* Email */}
-          <motion.div 
-            className='flex items-center gap-3'
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            viewport={{once:true , amount: 0.4}}
-          >
-            <div className='p-5 bg-gray-900 text-white rounded-xl shadow-gray-700 shadow-lg'>
-              <MdAttachEmail />
-            </div>
-            <div>
-              <h1>Email :</h1>
-              <p>studioakofficial@gmail.com</p>
-            </div>
-          </motion.div>
-        </motion.div>
-
-        {/* Google Map iframe */}
-        <motion.div 
-          className='lg:w-1/2'
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.6 }}
-          viewport={{once:true , amount: 0.4}}
-        >
-          <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3535.120538241444!2d78.9626668!3d11.7343491!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bab67271360259d%3A0xa6c7c6d348ae4f07!2sSTUDIO%20AK%20-%20WEDDING%20PHOTOGRAPHY!5e1!3m2!1sen!2sin!4v1743943224839!5m2!1sen!2sin"
-            width="600"
-            height="450"
-            style={{ border: 0 }}
-            allowFullScreen=""
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-          ></iframe>
-        </motion.div>
-
+          </div>
+        ))}
       </div>
     </section>
   );

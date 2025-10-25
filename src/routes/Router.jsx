@@ -12,6 +12,7 @@ import PrivateRoute from "../components/Dashboard/DashboardAuth/PrivateRoute";
 import AddProducts from "../components/Dashboard/AddProducts";
 import AllProducts from "../components/Dashboard/AllProducts";
 import PublicRoute from "../components/Dashboard/DashboardAuth/PublicRoute";
+import DashboardSignup from "../components/Dashboard/DashboardAuth/DasboardSignup";
 
 export const router = createBrowserRouter([
     {
@@ -47,8 +48,8 @@ export const router = createBrowserRouter([
             {
                 path:"/dashboard",
                 element:(
-                    // <PrivateRoute><Dashboard /></PrivateRoute>
-                    <Dashboard />
+                    <PrivateRoute><Dashboard /></PrivateRoute>
+                    // <Dashboard />
                 )
             },
             {
@@ -69,6 +70,10 @@ export const router = createBrowserRouter([
                 element:(
                     <PublicRoute><DashboardLogin /></PublicRoute>
                 )
+            },
+            {
+                path:"/dashboard-signup",
+                element:<DashboardSignup isAdmin={true}/>
             },
         ]
     }

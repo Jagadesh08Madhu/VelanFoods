@@ -20,7 +20,7 @@ export default function Login() {
     setError("");
     setLoading(true)
     try {
-      const response = await fetch("https://your-backend.com/api/login", {
+      const response = await fetch("https://shri-velan-food.onrender.com/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -32,7 +32,7 @@ export default function Login() {
         const data = await response.json();
 
         // optional: save auth token or user info
-        localStorage.setItem("token", data.token);
+        localStorage.setItem("Usertoken", data.token);
 
         // redirect back to the page the user came from
         navigate(from, { replace: true });

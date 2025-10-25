@@ -1,12 +1,15 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthLoader from "../../Auth/AuthLoader";
+import { VscEyeClosed } from "react-icons/vsc";
+import { VscEye } from "react-icons/vsc";
 
 export default function DashboardLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -27,8 +30,18 @@ export default function DashboardLogin() {
       const data = await res.json();
 
       if (res.ok && data.success) {
+        // ✅ Role check added here
+        if (data?.data?.user?.role !== "ADMIN") {
+          alert("Access denied. Admins only!");
+          setLoading(false);
+          navigate("/login")
+          return;
+        }
+        console.log(data?.data?.user?.role)
+        // Store tokens
         sessionStorage.setItem("accessToken", data.data.accessToken);
         sessionStorage.setItem("refreshToken", data.data.refreshToken);
+        sessionStorage.setItem("role", data?.data?.user?.role);
 
         navigate("/dashboard");
       } else {
@@ -57,7 +70,7 @@ export default function DashboardLogin() {
       </div>
 
       {/* Right side form */}
-      <div className="w-full lg:w-1/2 flex  items-center justify-center">
+      <div className="w-full lg:w-1/2 flex items-center justify-center">
         <div className="bg-[#1a162b] p-10 rounded-2xl shadow-lg w-[90%] md:w-[70%]">
           <h2 className="text-2xl font-semibold mb-6 text-center">
             Welcome Back Admin👋
@@ -77,24 +90,40 @@ export default function DashboardLogin() {
             </div>
 
             <div className="flex flex-col gap-5">
-              <label className="text-lg text-gray-300 block">
-                Password
-              </label>
-              <input
-                type="password"
-                placeholder="Enter your password"
-                className="w-full px-4 py-2 bg-[#221e35] border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <label className="text-lg text-gray-300 block">Password</label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  className="w-full px-4 py-2 bg-[#221e35] border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 pr-10"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                >
+                  {showPassword ? (
+                    <VscEyeClosed />
+                  ) : (
+                    <VscEye />
+                  )}
+                </button>
+              </div>
             </div>
+
+
 
             {error && <p className="text-red-500 text-sm">{error}</p>}
 
             <button
               type="submit"
-              className={` ${loading ? "bg-transparent" : "bg-gradient-to-r "} from-indigo-500 to-purple-600 hover:from-purple-500 hover:to-indigo-600 transition-all duration-300 text-white py-3 flex items-center w-full justify-center  rounded-lg font-medium`}
+              disabled={loading}
+              className={`${
+                loading ? "bg-transparent" : "bg-gradient-to-r"
+              } from-indigo-500 to-purple-600 hover:from-purple-500 hover:to-indigo-600 transition-all duration-300 text-white py-3 flex items-center w-full justify-center rounded-lg font-medium`}
             >
               {loading ? <AuthLoader /> : "Login"}
             </button>
