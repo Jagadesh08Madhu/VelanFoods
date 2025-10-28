@@ -82,11 +82,18 @@ export default function Dashboard() {
 
               {/* Bottom Section: Signup Link */}
               <div className="mb-10 px-2">
+               
                 <a
                   href="/dashboard-signup"
                   className="w-full block tracking-widest text-center py-3 text-white font-semibold rounded hover:bg-white hover:text-black transition-all duration-300"
                 >
                   Signup as a Admin
+                </a>
+                 <a
+                  href="/"
+                  className="w-full block tracking-widest text-center py-3 text-white font-semibold rounded hover:bg-white hover:text-black transition-all duration-300"
+                >
+                  ← Back to home page
                 </a>
               </div>
             </motion.div>

@@ -7,7 +7,7 @@ import { CartContext } from "../components/Cart/CartContext";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
-export default function Products() {
+export default function ComboProducts() {
   const { addToCart, updateQuantity, cartItems } = useContext(CartContext);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,7 +23,7 @@ export default function Products() {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        const comboItems = data.data.products.filter((item) => item.isCombo !== true);
+        const comboItems = data.data.products.filter((item) => item.isCombo === true);
         setProducts(comboItems);
 
         // Initialize quantities

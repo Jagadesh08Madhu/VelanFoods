@@ -45,7 +45,7 @@ export default function Navbar() {
         </a>
 
         {/* Desktop Links */}
-        <ul className="hidden font-SpaceGrotesk tracking-wider md:flex gap-8 items-center font-medium">
+        <ul className="hidden font-SpaceGrotesk tracking-wider lg:flex gap-8 items-center font-medium">
           {navItems.map((item) => (
             <li key={item.path}>
               <a
@@ -63,7 +63,7 @@ export default function Navbar() {
         </ul>
 
         {/* Desktop Login / My Account */}
-        <div className="hidden md:block relative">
+        <div className="hidden lg:block relative">
           {!isLoggedIn ? (
             <a
               onClick={goToLogin}
@@ -101,8 +101,7 @@ export default function Navbar() {
         </div>
 
         {/* Mobile Hamburger */}
-        {/* Mobile Hamburger */}
-      <div className="md:hidden flex items-center">
+      <div className="lg:hidden flex items-center">
         <button
           onClick={() => setMenuOpen(!menuOpen)}
           className="text-gray-900 text-3xl focus:outline-none relative w-10 h-10 flex items-center justify-center"
@@ -138,11 +137,11 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       <div
-        className={`md:hidden bg-white absolute top-full left-0 w-full shadow-lg transition-all duration-300 overflow-hidden ${
-          menuOpen ? "max-h-screen opacity-100 py-4" : "max-h-0 opacity-0 py-0"
+        className={`lg:hidden bg-white absolute min-h-screen top-full left-0 w-full shadow-lg transition-all duration-300 overflow-hidden ${
+          menuOpen ? "max-w-full opacity-100 py-4" : "max-w-0 opacity-0 py-0"
         }`}
       >
-        <ul className="flex flex-col items-center gap-8 tracking-widest px-6 text-gray-900 font-medium">
+        <ul className="flex flex-col justify-between items-start h-full gap-10 tracking-widest px-6 text-gray-900 font-medium">
           {navItems.map((item) => (
             <li key={item.path}>
               <a

@@ -13,6 +13,10 @@ import AddProducts from "../components/Dashboard/AddProducts";
 import AllProducts from "../components/Dashboard/AllProducts";
 import PublicRoute from "../components/Dashboard/DashboardAuth/PublicRoute";
 import DashboardSignup from "../components/Dashboard/DashboardAuth/DasboardSignup";
+import ComboProducts from "../pages/ComboProducts";
+import CartPage from "../components/Cart/CartPage";
+import Products from "../pages/Products";
+import ProductDetails from "../pages/ProductDetails";
 
 export const router = createBrowserRouter([
     {
@@ -26,6 +30,22 @@ export const router = createBrowserRouter([
             {
                 path:"/contact-us",
                 element:<Contact />
+            },
+            {
+                path:"/combo-products",
+                element:<ComboProducts />
+            },
+            {
+                path:"add-to-cart",
+                element:<CartPage />
+            },
+            {
+                path:"/products",
+                element:<Products />
+            },
+            {
+                path:"/product-details/:id",
+                element:<ProductDetails />
             },
             // Authenticated
             {
